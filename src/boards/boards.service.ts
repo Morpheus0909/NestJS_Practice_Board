@@ -1,80 +1,60 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UsePipes } from '@nestjs/common';
+import { Board } from '@prisma/client';
+import { PrismaService } from 'src/prisma.client';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { Board } from './board.entity';
-import { BoardRepository } from './board.repository';
-import { DeleteResult } from 'typeorm';
 import { BoardStatus } from './board.model';
 
 @Injectable()
 export class BoardsService {
-  // private boards:Board[] = [];
 
-  // getAllBoards():Board[] {
-  //   return this.boards;
-  // }
-
-  // createBoard(createBoardDto:CreateBoardDto){
-  //   const {title, disc} = createBoardDto;
-  //   const board:Board = {
-  //     id:uuid(),
-  //     title,
-  //     disc,
-  //     status:BoardStatus.PUBLIC
-  //   }
-
-  //   this.boards.push(board);
-
-  //   return board;
-  // }
-
-  // getBoardById(id:string):Board{
-  //   const res =  this.boards.find((board) => board.id===id);
-  //   if(!res){
-  //     throw new NotFoundException();
-  //   }
-
-  //   return res;
-  // }
-
-  // deleteBoard(id:string):void{
-  //   const found = this.getBoardById(id);
-  //   this.boards = this.boards.filter((board)=>board.id !== found.id);
-  // }
-
-  // updateBoardStatus(id:string, status:BoardStatus){
-  //   const board = this.getBoardById(id);
-  //   board.status = status;
-
-  //   return board;
-  // }
-  constructor(private boardsRepository:BoardRepository){}
+  constructor (private prismaService:PrismaService){ }
 
   async getBoardById(id:number):Promise<Board>{
-    const found = await this.boardsRepository.findBoardById(id);
+    const find = await this.prismaService.board.findUnique({
+      where: {
+        id
+      }
+    })
 
-    return found;
+    return find;
   }
 
-  createBoard(createBoardDto:CreateBoardDto):Promise<Board>{
-    // Entity 생성
-    return this.boardsRepository.createBoard(createBoardDto);
+  async createBoard(createBoardDto:CreateBoardDto):Promise<Board>{
+    const {title, disc} = createBoardDto;
+    
+    const newBoard = await this.prismaService.board.create({
+      data:{
+          title:title,
+          disc:disc
+      }
+    });
+
+    return newBoard;
   }
 
-  deleteBoard(id:number):Promise<void>{
-    const res = this.boardsRepository.deleteBoard(id);
+  async deleteBoard(id:number):Promise<Board>{
+    const del = await this.prismaService.board.delete({where:{
+      id
+    }})
 
-    return res;
+    return del;
   }
 
   async updateBoardStatus(id:number, status:BoardStatus):Promise<Board>{
+    const updateBoard = await this.prismaService.board.update({
+      where : {
+        id
+      },
+      data : {
+        status:status
+      }
+    });
 
-    const target = this.boardsRepository.updateBoardStatus(id,status);
-
-    return target;
+    return updateBoard;
   }
 
   async getAllBoards():Promise<Board[]>{
-    return this.boardsRepository.getAllBoards();
+    return await this.prismaService.board.findMany();
   }
 
 }
