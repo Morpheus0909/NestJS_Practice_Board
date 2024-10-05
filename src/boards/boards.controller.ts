@@ -1,11 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardStatus } from './board.model';
 import { Board } from '@prisma/client';
+import { BigintTransformInterceptor } from 'src/interceptors/bigint.interceptor';
 
+@UseInterceptors(BigintTransformInterceptor)
 @Controller('boards')
 export class BoardsController {
+
   constructor(private boardService:BoardsService){  }
 
 
@@ -20,7 +23,6 @@ export class BoardsController {
   createBoard(@Body() createBoardDto:CreateBoardDto){
     return this.boardService.createBoard(createBoardDto);
   }
-
 
   @Get('/:id')
   getBoardById(@Param('id', ParseIntPipe) id:number){

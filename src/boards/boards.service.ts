@@ -4,12 +4,13 @@ import { PrismaService } from 'src/prisma.client';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardStatus } from './board.model';
 
+
 @Injectable()
 export class BoardsService {
 
   constructor (private prismaService:PrismaService){ }
 
-  async getBoardById(id:number):Promise<Board>{
+  async getBoardById(id:number){
     const find = await this.prismaService.board.findUnique({
       where: {
         id
@@ -54,7 +55,8 @@ export class BoardsService {
   }
 
   async getAllBoards():Promise<Board[]>{
-    return await this.prismaService.board.findMany();
+    const find = await this.prismaService.board.findMany();
+    return find;
   }
 
 }
